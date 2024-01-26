@@ -1,130 +1,197 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <QPushButton>
+#include <QKeyEvent>
 
-Student::Student() {}
-
-QString Student::getName() const {
-    return name;
-}
-
-void Student::setName(const QString &n) {
-    name = n;
-}
-
-QString Student::getBirthDate() const {
-    return birthDate;
-}
-
-void Student::setBirthDate(const QString &date) {
-    birthDate = date;
-}
-
-QString Student::getPhoneNumber() const {
-    return phoneNumber;
-}
-
-void Student::setPhoneNumber(const QString &number) {
-    phoneNumber = number;
-}
-
-QString Student::getAddress() const {
-    return address;
-}
-
-void Student::setAddress(const QString &addr) {
-    address = addr;
-}
-
-QString Student::getGroupNumber() const {
-    return groupNumber;
-}
-
-void Student::setGroupNumber(const QString &group) {
-    groupNumber = group;
-}
-
-// Реалізація функцій класу MainWindow
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    , ui(new Ui::MainWindow),
+    currentResult(0.0),
+    pendingOperator(""),
+    waitingForOperand(false)
 {
-    // Ініціалізація елементів інтерфейсу користувача
-    nameLineEdit = new QLineEdit(this);
-    birthDateLineEdit = new QLineEdit(this);
-    phoneNumberLineEdit = new QLineEdit(this);
-    addressLineEdit = new QLineEdit(this);
-    groupNumberLineEdit = new QLineEdit(this);
-    outputTextEdit = new QTextEdit(this);
+    ui->setupUi(this);
+    for (int i = 0; i < 10; ++i) {
+        QString buttonName = "button_" + QString::number(i);
+        QPushButton *button = MainWindow::findChild<QPushButton *>(buttonName);
+        connect(button, SIGNAL(clicked()), this, SLOT(digitClicked()));
+    }
 
-    QPushButton *addButton = new QPushButton("Додати студента", this);
-    QPushButton *displayButton = new QPushButton("Вивести інформацію", this);
+    // Connect unary operator buttons
+    connect(ui->button_pr, SIGNAL(clicked()), this, SLOT(unaryOperatorClicked()));
+    // Connect other unary operators if needed
 
-    // Розміщення елементів на вікні
-    QGridLayout *layout = new QGridLayout;
-    layout->addWidget(new QLabel("Ім'я:"), 0, 0);
-    layout->addWidget(nameLineEdit, 0, 1);
-    layout->addWidget(new QLabel("Дата народження:"), 1, 0);
-    layout->addWidget(birthDateLineEdit, 1, 1);
-    layout->addWidget(new QLabel("Номер телефону:"), 2, 0);
-    layout->addWidget(phoneNumberLineEdit, 2, 1);
-    layout->addWidget(new QLabel("Адреса:"), 3, 0);
-    layout->addWidget(addressLineEdit, 3, 1);
-    layout->addWidget(new QLabel("Номер групи:"), 4, 0);
-    layout->addWidget(groupNumberLineEdit, 4, 1);
-    layout->addWidget(addButton, 5, 0, 1, 2);
-    layout->addWidget(displayButton, 6, 0, 1, 2);
-    layout->addWidget(new QLabel("Інформація про студентів:"), 7, 0);
-    layout->addWidget(outputTextEdit, 8, 0, 1, 2);
+    // Connect binary operator buttons
+    connect(ui->button_sum, SIGNAL(clicked()), this, SLOT(binaryOperatorClicked()));
+    // Connect other binary operators if needed
+    connect(ui->button_dil, SIGNAL(clicked()), this, SLOT(binaryOperatorClicked()));
+    // Connect equal button
+    connect(ui->button_rov, SIGNAL(clicked()), this, SLOT(equalClicked()));
 
-    QWidget *centralWidget = new QWidget(this);
-    centralWidget->setLayout(layout);
-    setCentralWidget(centralWidget);
+    // Connect clear button
+    connect(ui->button_AC, SIGNAL(clicked()), this, SLOT(clearAll()));
 
-    // Підключення слотів до сигналів кнопок
-    connect(addButton, SIGNAL(clicked()), this, SLOT(addStudent()));
-    connect(displayButton, SIGNAL(clicked()), this, SLOT(displayStudentData()));
+    connect(ui->vid, SIGNAL(clicked()), this, SLOT(changeSignClicked()));
+
+    // Initialize the calculator state
+    resetCalculator();
 }
 
-MainWindow::~MainWindow() {}
-
-void MainWindow::addStudent() {
-    // Створення об'єкта класу Student та встановлення значень з полів введення
-    Student student;
-    student.setName(nameLineEdit->text());
-    student.setBirthDate(birthDateLineEdit->text());
-    student.setPhoneNumber(phoneNumberLineEdit->text());
-    student.setAddress(addressLineEdit->text());
-    student.setGroupNumber(groupNumberLineEdit->text());
-
-    // Додавання студента до списку
-    students.append(student);
-
-    // Очищення полів введення
-    clearInputFields();
+MainWindow::~MainWindow()
+{
+    delete ui;
 }
 
-void MainWindow::displayStudentData() {
-    // Виведення інформації про студентів у QTextEdit
-    outputTextEdit->clear();
-    for (const Student &student : students) {
-        displayStudent(student);
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    processKeyPress(event);
+}
+
+void MainWindow::digitClicked()
+{
+    QPushButton *clickedButton = qobject_cast<QPushButton *>(sender());
+    int digitValue = clickedButton->text().toInt();
+
+    if (waitingForOperand) {
+        ui->lineEdit->clear();
+        waitingForOperand = false;
+    }
+
+    ui->lineEdit->setText(ui->lineEdit->text() + QString::number(digitValue));
+}
+
+void MainWindow::unaryOperatorClicked()
+{
+    QPushButton *clickedButton = qobject_cast<QPushButton *>(sender());
+    QString clickedOperator = clickedButton->text();
+
+    double operand = ui->lineEdit->text().toDouble();
+    double result = 0.0;
+
+    if (clickedOperator == "%") {
+        result = operand * 0.01;
+    }
+
+    ui->lineEdit->setText(QString::number(result));
+    waitingForOperand = true;
+}
+
+void MainWindow::binaryOperatorClicked()
+{
+    QPushButton *clickedButton = qobject_cast<QPushButton *>(sender());
+    QString clickedOperator = clickedButton->text();
+
+    double operand = ui->lineEdit->text().toDouble();
+
+    calculate(operand);
+
+    pendingOperator = clickedOperator;
+    waitingForOperand = true;
+}
+
+void MainWindow::equalClicked()
+{
+    double operand = ui->lineEdit->text().toDouble();
+
+    calculate(operand);
+
+    pendingOperator.clear();
+    waitingForOperand = true;
+}
+
+void MainWindow::clearAll()
+{
+    resetCalculator();
+    ui->lineEdit->clear();
+}
+
+void MainWindow::changeSignClicked()
+{
+    QString text = ui->lineEdit->text();
+    if (!text.isEmpty()) {
+        double value = text.toDouble();
+        value = -value;
+        ui->lineEdit->setText(QString::number(value));
     }
 }
 
-void MainWindow::clearInputFields() {
-    // Очищення полів введення
-    nameLineEdit->clear();
-    birthDateLineEdit->clear();
-    phoneNumberLineEdit->clear();
-    addressLineEdit->clear();
-    groupNumberLineEdit->clear();
+void MainWindow::calculate(double rightOperand)
+{
+    if (pendingOperator == "+") {
+        currentResult += rightOperand;
+    } else if (pendingOperator == "-") {
+        currentResult -= rightOperand;
+    } else if (pendingOperator == "*") {
+        currentResult *= rightOperand;
+    } else if (pendingOperator == "/") {
+        if (rightOperand == 0.0) {
+            ui->lineEdit->setText("Error: Division by zero");
+            resetCalculator();
+            return;
+        } else {
+            currentResult /= rightOperand;
+        }
+    } else if (pendingOperator == "%") {
+        currentResult = fmod(currentResult, rightOperand);
+    } else {
+        currentResult = rightOperand;
+    }
+
+    ui->lineEdit->setText(QString::number(currentResult));
 }
 
-void MainWindow::displayStudent(const Student &student) {
-    // Виведення інформації про студента у QTextEdit
-    outputTextEdit->append("Ім'я: " + student.getName());
-    outputTextEdit->append("Дата народження: " + student.getBirthDate());
-    outputTextEdit->append("Номер телефону: " + student.getPhoneNumber());
-    outputTextEdit->append("Адреса: " + student.getAddress());
-    outputTextEdit->append("Номер групи: " + student.getGroupNumber());
-    outputTextEdit->append("-------------------------------");
+void MainWindow::resetCalculator()
+{
+    currentResult = 0.0;
+    pendingOperator.clear();
+    waitingForOperand = false;
+}
+
+void MainWindow::processKeyPress(QKeyEvent *event)
+{
+    int key = event->key();
+
+    if (key >= Qt::Key_0 && key <= Qt::Key_9) {
+        int digitValue = key - Qt::Key_0;
+        if (waitingForOperand) {
+            ui->lineEdit->clear();
+            waitingForOperand = false;
+        }
+        ui->lineEdit->setText(ui->lineEdit->text() + QString::number(digitValue));
+    } else if (key == Qt::Key_Percent) {
+        unaryOperatorClicked();
+    } else if (key == Qt::Key_Plus || key == Qt::Key_Minus ||
+               key == Qt::Key_Asterisk || key == Qt::Key_Slash) {
+        QString operatorText = "";
+        switch (key) {
+        case Qt::Key_Plus:
+            operatorText = "+";
+            break;
+        case Qt::Key_Minus:
+            operatorText = "-";
+            break;
+        case Qt::Key_Asterisk:
+            operatorText = "*";
+            break;
+        case Qt::Key_Slash:
+            operatorText = "/";
+            break;
+        }
+        ui->button_add->setText(operatorText);
+        binaryOperatorClicked();
+    } else if (key == Qt::Key_Equal || key == Qt::Key_Enter) {
+        equalClicked();
+    } else if (key == Qt::Key_Backspace) {
+        QString text = ui->lineEdit->text();
+        if (!text.isEmpty()) {
+            text.chop(1);
+            ui->lineEdit->setText(text);
+        }
+    } else if (key == Qt::Key_C || key == Qt::Key_Escape) {
+        clearAll();
+    } else if (key == Qt::Key_Period || key == Qt::Key_Comma) {
+        if (!ui->lineEdit->text().contains(QChar('.'))) {
+            ui->lineEdit->setText(ui->lineEdit->text() + ".");
+        }
+    }
 }
