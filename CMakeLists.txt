@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-<<<<<<< HEAD
-project(bills VERSION 0.1 LANGUAGES CXX)
-=======
-project(4 VERSION 0.1 LANGUAGES CXX)
->>>>>>> fd6ff2d8c9e4bead9e869b5523d7b174449a8996
+project(clock2 VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -24,63 +20,37 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-<<<<<<< HEAD
-    qt_add_executable(bills
-=======
-    qt_add_executable(4
->>>>>>> fd6ff2d8c9e4bead9e869b5523d7b174449a8996
+    qt_add_executable(clock2
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
 # Define target properties for Android with Qt 6 as:
-<<<<<<< HEAD
-#    set_property(TARGET bills APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-=======
-#    set_property(TARGET 4 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
->>>>>>> fd6ff2d8c9e4bead9e869b5523d7b174449a8996
+#    set_property(TARGET clock2 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
 # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
-<<<<<<< HEAD
-        add_library(bills SHARED
-=======
-        add_library(4 SHARED
->>>>>>> fd6ff2d8c9e4bead9e869b5523d7b174449a8996
+        add_library(clock2 SHARED
             ${PROJECT_SOURCES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
-<<<<<<< HEAD
-        add_executable(bills
-=======
-        add_executable(4
->>>>>>> fd6ff2d8c9e4bead9e869b5523d7b174449a8996
+        add_executable(clock2
             ${PROJECT_SOURCES}
         )
     endif()
 endif()
 
-<<<<<<< HEAD
-target_link_libraries(bills PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-=======
-target_link_libraries(4 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
->>>>>>> fd6ff2d8c9e4bead9e869b5523d7b174449a8996
+target_link_libraries(clock2 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 if(${QT_VERSION} VERSION_LESS 6.1.0)
-<<<<<<< HEAD
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.bills)
+  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.clock2)
 endif()
-set_target_properties(bills PROPERTIES
-=======
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.4)
-endif()
-set_target_properties(4 PROPERTIES
->>>>>>> fd6ff2d8c9e4bead9e869b5523d7b174449a8996
+set_target_properties(clock2 PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -89,21 +59,12 @@ set_target_properties(4 PROPERTIES
 )
 
 include(GNUInstallDirs)
-<<<<<<< HEAD
-install(TARGETS bills
-=======
-install(TARGETS 4
->>>>>>> fd6ff2d8c9e4bead9e869b5523d7b174449a8996
+install(TARGETS clock2
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-<<<<<<< HEAD
-    qt_finalize_executable(bills)
-=======
-    qt_finalize_executable(4)
->>>>>>> fd6ff2d8c9e4bead9e869b5523d7b174449a8996
+    qt_finalize_executable(clock2)
 endif()
-
