@@ -17,20 +17,14 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void on_pushButton_clicked();
+
+    void on_pushButton2_clicked();
+
+    void on_pushButton3_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
-#ifndef ANALOGCLOCK_H
-#define ANALOGCLOCK_H
-#include <QWidget>
-class AnalogClock : public QWidget
-{
-    Q_OBJECT
-public:
-    AnalogClock(QWidget *parent = nullptr);
-protected:
-    void paintEvent(QPaintEvent *event) override;
-};
-#endif
-
