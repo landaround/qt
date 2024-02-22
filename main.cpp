@@ -4,6 +4,7 @@
 
 int main(int argc, char *argv[])
 {
+    // згодом може бути іконка для додатку
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
